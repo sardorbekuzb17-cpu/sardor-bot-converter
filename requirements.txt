@@ -1,8 +1,5 @@
-python-telegram-bot
-docx2pdf
-pdf2docx
-python-docx
-PyPDF2
-reportlab
-flask
-python-pptx
+python-telegram-bot==21.0
+pdf2docx==0.5.8
+python-docx==1.1.2
+reportlab==4.2.5
+python-pptx==1.0.2
