@@ -1,0 +1,11 @@
+services:
+  - name: sardor-bot-converter
+    type: worker
+    instance_type: free
+    regions:
+      - fra
+    env:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    ports: []
+    health_checks: []
