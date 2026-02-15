@@ -1,5 +1,7 @@
 import os
 import logging
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from pdf2docx import Converter
@@ -10,6 +12,14 @@ from reportlab.lib.styles import getSampleStyleSheet
 from pptx import Presentation
 
 logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.WARNING)
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'OK')
+    def log_message(self, format, *args):
+        pass
 
 BOT_TOKEN = "8360235283:AAEVm9ujtALyLhldZfmBk9eATYE9uBFZ7Dw"
 
@@ -161,6 +171,14 @@ async def pptx_to_docx(path):
     return out
 
 def main():
+    # Health check server
+    def run_health_server():
+        server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
+        server.serve_forever()
+    
+    health_thread = threading.Thread(target=run_health_server, daemon=True)
+    health_thread.start()
+    
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
