@@ -1,0 +1,8 @@
+python-telegram-bot
+docx2pdf
+pdf2docx
+python-docx
+PyPDF2
+reportlab
+flask
+python-pptx

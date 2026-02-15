@@ -1,0 +1,12 @@
+*.pyc
+__pycache__/
+*.docx
+*.pdf
+*.doc
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+sardor_*
+temp_*
+.env
