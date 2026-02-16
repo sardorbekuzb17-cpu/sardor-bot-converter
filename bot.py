@@ -11,7 +11,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from pptx import Presentation
 
-logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.WARNING)
+logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
 
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
