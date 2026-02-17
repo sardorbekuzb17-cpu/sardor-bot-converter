@@ -2,6 +2,7 @@ import os
 import logging
 import asyncio
 import threading
+import gc
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
@@ -39,8 +40,8 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_name = document.file_name.lower()
     file_size_mb = document.file_size / (1024 * 1024)
     
-    if file_size_mb > 10:
-        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 10 MB)")
+    if file_size_mb > 100:
+        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 100 MB)")
         return
     
     try:
@@ -88,10 +89,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("❌ Fayl topilmadi")
         return
     
+    output = None
     try:
         msg = await query.message.reply_text("⏳ Konvertatsiya...")
         
-        output = None
         if action == "docx_pdf":
             output = await docx_to_pdf(path)
         elif action == "pdf_docx":
@@ -107,21 +108,18 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             with open(output, 'rb') as f:
                 await query.message.reply_document(document=f, filename=os.path.basename(output))
             await query.message.reply_text("✅ Tayyor!")
-            os.remove(output)
         else:
             await query.message.reply_text("❌ Xatolik")
-        
-        # Asl faylni o'chirish
-        if os.path.exists(path):
-            os.remove(path)
             
     except Exception as e:
         await query.message.reply_text(f"❌ Xatolik: {str(e)}")
-        # Xatolik bo'lsa ham fayllarni o'chirish
+    finally:
+        # Barcha fayllarni o'chirish va memory tozalash
         if path and os.path.exists(path):
             os.remove(path)
         if output and os.path.exists(output):
             os.remove(output)
+        gc.collect()  # Memory tozalash
 
 async def docx_to_pdf(path):
     out = 'sardor.pdf'
