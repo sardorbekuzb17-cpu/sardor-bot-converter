@@ -1,7 +1,5 @@
 import os
 import logging
-import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from pdf2docx import Converter
@@ -12,14 +10,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 from pptx import Presentation
 
 logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
-
-class HealthHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'OK')
-    def log_message(self, format, *args):
-        pass
 
 BOT_TOKEN = "8360235283:AAEVm9ujtALyLhldZfmBk9eATYE9uBFZ7Dw"
 
@@ -171,21 +161,26 @@ async def pptx_to_docx(path):
     return out
 
 def main():
-    # Health check server
-    def run_health_server():
-        server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
-        server.serve_forever()
-    
-    health_thread = threading.Thread(target=run_health_server, daemon=True)
-    health_thread.start()
-    
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     app.add_handler(CallbackQueryHandler(button_callback))
     
-    print("✅ Bot ishga tushdi!")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Webhook rejimi
+    PORT = int(os.environ.get('PORT', 8000))
+    WEBHOOK_URL = os.environ.get('WEBHOOK_URL', '')
+    
+    if WEBHOOK_URL:
+        print(f"✅ Bot webhook rejimida ishga tushdi: {WEBHOOK_URL}")
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=BOT_TOKEN,
+            webhook_url=f"{WEBHOOK_URL}/{BOT_TOKEN}"
+        )
+    else:
+        print("✅ Bot polling rejimida ishga tushdi!")
+        app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
     main()
