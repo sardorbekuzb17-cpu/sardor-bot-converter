@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from pdf2docx import Converter
@@ -167,7 +168,19 @@ def main():
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     app.add_handler(CallbackQueryHandler(button_callback))
     
-    print("✅ Bot ishga tushdi!")
+    # Keep-alive: har 5 daqiqada o'ziga ping yuborish
+    async def keep_alive(application):
+        while True:
+            try:
+                await asyncio.sleep(300)  # 5 daqiqa
+                await application.bot.get_me()
+                print("✅ Keep-alive ping yuborildi")
+            except Exception as e:
+                print(f"⚠️ Keep-alive xatolik: {e}")
+    
+    app.post_init = lambda app: asyncio.create_task(keep_alive(app))
+    
+    print("✅ Bot ishga tushdi! (Keep-alive faol)")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
