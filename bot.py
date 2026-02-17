@@ -39,8 +39,8 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_name = document.file_name.lower()
     file_size_mb = document.file_size / (1024 * 1024)
     
-    if file_size_mb > 20:
-        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 20 MB)")
+    if file_size_mb > 10:
+        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 10 MB)")
         return
     
     try:
@@ -110,9 +110,18 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             os.remove(output)
         else:
             await query.message.reply_text("❌ Xatolik")
+        
+        # Asl faylni o'chirish
+        if os.path.exists(path):
+            os.remove(path)
             
     except Exception as e:
-        await query.message.reply_text(f"❌ {str(e)}")
+        await query.message.reply_text(f"❌ Xatolik: {str(e)}")
+        # Xatolik bo'lsa ham fayllarni o'chirish
+        if path and os.path.exists(path):
+            os.remove(path)
+        if output and os.path.exists(output):
+            os.remove(output)
 
 async def docx_to_pdf(path):
     out = 'sardor.pdf'
