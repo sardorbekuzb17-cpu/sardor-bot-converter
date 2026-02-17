@@ -12,6 +12,7 @@ from pptx import Presentation
 logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
 
 BOT_TOKEN = "8360235283:AAEVm9ujtALyLhldZfmBk9eATYE9uBFZ7Dw"
+# Webhook configuration for 24/7 uptime
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
