@@ -167,21 +167,8 @@ def main():
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     app.add_handler(CallbackQueryHandler(button_callback))
     
-    # Webhook rejimi
-    PORT = int(os.environ.get('PORT', 8000))
-    WEBHOOK_URL = os.environ.get('WEBHOOK_URL', '')
-    
-    if WEBHOOK_URL:
-        print(f"✅ Bot webhook rejimida ishga tushdi: {WEBHOOK_URL}")
-        app.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=BOT_TOKEN,
-            webhook_url=f"{WEBHOOK_URL}/{BOT_TOKEN}"
-        )
-    else:
-        print("✅ Bot polling rejimida ishga tushdi!")
-        app.run_polling(allowed_updates=Update.ALL_TYPES)
+    print("✅ Bot ishga tushdi!")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
     main()
