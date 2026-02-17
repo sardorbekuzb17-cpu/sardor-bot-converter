@@ -1,6 +1,8 @@
 import os
 import logging
 import asyncio
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from pdf2docx import Converter
@@ -11,6 +13,14 @@ from reportlab.lib.styles import getSampleStyleSheet
 from pptx import Presentation
 
 logging.basicConfig(format='%(levelname)s - %(message)s', level=logging.INFO)
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Bot is alive!')
+    def log_message(self, format, *args):
+        pass
 
 BOT_TOKEN = "8360235283:AAEVm9ujtALyLhldZfmBk9eATYE9uBFZ7Dw"
 # Webhook configuration for 24/7 uptime
@@ -163,24 +173,19 @@ async def pptx_to_docx(path):
     return out
 
 def main():
+    # HTTP server - bot uyg'oq turishini ta'minlaydi
+    def run_server():
+        server = HTTPServer(('0.0.0.0', 8000), HealthHandler)
+        server.serve_forever()
+    
+    threading.Thread(target=run_server, daemon=True).start()
+    
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     app.add_handler(CallbackQueryHandler(button_callback))
     
-    # Keep-alive: har 5 daqiqada o'ziga ping yuborish
-    async def keep_alive(application):
-        while True:
-            try:
-                await asyncio.sleep(300)  # 5 daqiqa
-                await application.bot.get_me()
-                print("✅ Keep-alive ping yuborildi")
-            except Exception as e:
-                print(f"⚠️ Keep-alive xatolik: {e}")
-    
-    app.post_init = lambda app: asyncio.create_task(keep_alive(app))
-    
-    print("✅ Bot ishga tushdi! (Keep-alive faol)")
+    print("✅ Bot ishga tushdi! (HTTP server port 8000)")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
