@@ -29,7 +29,7 @@ BOT_TOKEN = "8360235283:AAFbgERNApMoCNztK0aUBnEI1jgajlDJ0-Q"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Salom! Hujjat konvertor bot.\n\n"
+        "Salom! Hujjat konvertor botiman.\n\n"
         "📄 DOCX ↔ PDF\n"
         "📄 PDF → DOCX\n"
         "📽 PPTX → PDF/DOCX\n\n"
@@ -41,8 +41,8 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_name = document.file_name.lower()
     file_size_mb = document.file_size / (1024 * 1024)
     
-    if file_size_mb > 100:
-        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 100 MB)")
+    if file_size_mb > 200:
+        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 200 MB)")
         return
     
     try:
