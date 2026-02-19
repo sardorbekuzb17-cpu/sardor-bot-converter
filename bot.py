@@ -23,7 +23,7 @@ class HealthHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-BOT_TOKEN = "8282006713:AAHN1G4Jwzh6sIgyY4AIZMEU5Xbdwxjqxeg"
+BOT_TOKEN = "8360235283:AAFbgERNApMoCNztK0aUBnEI1jgajlDJ0-Q"
 # Webhook configuration for 24/7 uptime
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
