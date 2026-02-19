@@ -119,9 +119,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await query.message.reply_text(f"❌ Xatolik: {str(e)}")
     finally:
-        # Barcha fayllarni o'chirish va memory tozalash
-        if path and os.path.exists(path):
-            os.remove(path)
+        # Faqat output faylni o'chirish, asl faylni saqlab qolish
         if output and os.path.exists(output):
             os.remove(output)
         gc.collect()  # Memory tozalash
