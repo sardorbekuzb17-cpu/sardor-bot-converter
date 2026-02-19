@@ -41,8 +41,12 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_name = document.file_name.lower()
     file_size_mb = document.file_size / (1024 * 1024)
     
-    if file_size_mb > 200:
-        await update.message.reply_text(f"❌ Fayl katta: {file_size_mb:.1f} MB (max 200 MB)")
+    if file_size_mb > 20:
+        await update.message.reply_text(
+            f"❌ Fayl juda katta: {file_size_mb:.1f} MB\n\n"
+            "⚠️ 20 MB dan oshiq fayllar konvertor qilinmaydi.\n"
+            "Iltimos, 20 MB dan kichik fayl yuboring."
+        )
         return
     
     try:
