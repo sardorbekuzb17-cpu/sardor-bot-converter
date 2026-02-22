@@ -3,3 +3,5 @@ pdf2docx==0.5.8
 python-docx==1.1.2
 reportlab==4.2.5
 python-pptx==1.0.2
+pdf2image
+Pillow

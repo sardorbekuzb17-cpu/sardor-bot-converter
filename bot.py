@@ -66,7 +66,10 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if ext == '.docx':
             kb = [[InlineKeyboardButton("PDF", callback_data=f"docx_pdf:{fid}")]]
         elif ext == '.pdf':
-            kb = [[InlineKeyboardButton("DOCX", callback_data=f"pdf_docx:{fid}")]]
+            kb = [
+                [InlineKeyboardButton("DOCX", callback_data=f"pdf_docx:{fid}")],
+                [InlineKeyboardButton("PPTX", callback_data=f"pdf_pptx:{fid}")]
+            ]
         elif ext in ['.pptx', '.ppt']:
             kb = [
                 [InlineKeyboardButton("PDF", callback_data=f"pptx_pdf:{fid}")],
@@ -102,6 +105,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             output = await docx_to_pdf(path)
         elif action == "pdf_docx":
             output = await pdf_to_docx(path)
+        elif action == "pdf_pptx":
+            output = await pdf_to_pptx(path)
         elif action == "pptx_pdf":
             output = await pptx_to_pdf(path)
         elif action == "pptx_docx":
@@ -144,6 +149,73 @@ async def pdf_to_docx(path):
     cv = Converter(path)
     cv.convert(out)
     cv.close()
+    return out
+
+async def pdf_to_pptx(path):
+    """PDF dan PPTX ga konvertatsiya - rasmlar bilan"""
+    try:
+        from pdf2image import convert_from_path
+        from PIL import Image
+        import io
+        
+        out = 'sardor.pptx'
+        
+        # PDF sahifalarini rasmlarga aylantirish
+        images = convert_from_path(path, dpi=150)
+        
+        # PowerPoint yaratish
+        prs = Presentation()
+        prs.slide_width = 9144000  # 10 inches
+        prs.slide_height = 6858000  # 7.5 inches
+        
+        for img in images:
+            # Yangi slide qo'shish
+            blank_slide_layout = prs.slide_layouts[6]  # Bo'sh layout
+            slide = prs.slides.add_slide(blank_slide_layout)
+            
+            # Rasmni vaqtinchalik faylga saqlash
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format='PNG')
+            img_bytes.seek(0)
+            
+            # Rasmni slide'ga qo'shish (to'liq ekran)
+            left = top = 0
+            slide.shapes.add_picture(img_bytes, left, top, width=prs.slide_width, height=prs.slide_height)
+        
+        prs.save(out)
+        return out
+    except ImportError:
+        # Agar pdf2image o'rnatilmagan bo'lsa, oddiy usul
+        return await pdf_to_pptx_simple(path)
+
+async def pdf_to_pptx_simple(path):
+    """PDF dan PPTX ga oddiy konvertatsiya - faqat matn"""
+    out = 'sardor.pptx'
+    cv = Converter(path)
+    
+    # PDF'dan matnni olish
+    import fitz  # PyMuPDF
+    doc = fitz.open(path)
+    
+    prs = Presentation()
+    
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        text = page.get_text()
+        
+        # Yangi slide
+        slide_layout = prs.slide_layouts[1]  # Title and Content
+        slide = prs.slides.add_slide(slide_layout)
+        
+        title = slide.shapes.title
+        title.text = f"Sahifa {page_num + 1}"
+        
+        content = slide.placeholders[1]
+        content.text = text
+    
+    doc.close()
+    cv.close()
+    prs.save(out)
     return out
 
 async def pptx_to_pdf(path):
