@@ -240,16 +240,36 @@ async def pptx_to_pdf(path):
     return out
 
 async def pptx_to_docx(path):
+    """PPTX dan DOCX ga konvertatsiya - rasmlar bilan"""
+    import io
+    from PIL import Image
+    
     out = 'sardor.docx'
     prs = Presentation(path)
     doc = Document()
     
     for i, slide in enumerate(prs.slides, 1):
         doc.add_heading(f'Slide {i}', level=1)
+        
+        # Slide'dagi barcha shakllarni olish
         for shape in slide.shapes:
+            # Agar matn bo'lsa
             if hasattr(shape, "text") and shape.text.strip():
                 doc.add_paragraph(shape.text)
-        doc.add_paragraph()
+            
+            # Agar rasm bo'lsa
+            if shape.shape_type == 13:  # Picture
+                try:
+                    image = shape.image
+                    image_bytes = image.blob
+                    
+                    # Rasmni DOCX ga qo'shish
+                    image_stream = io.BytesIO(image_bytes)
+                    doc.add_picture(image_stream, width=doc.sections[0].page_width - doc.sections[0].left_margin - doc.sections[0].right_margin)
+                except Exception as e:
+                    print(f"Rasm qo'shishda xatolik: {e}")
+        
+        doc.add_paragraph()  # Slide orasida bo'sh joy
     
     doc.save(out)
     return out
